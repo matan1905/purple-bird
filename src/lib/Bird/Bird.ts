@@ -1,12 +1,13 @@
-import inspector, {Debugger, InspectorNotification, Session} from "inspector";
+import inspector, {Session} from "inspector";
 import DefaultBirdCommunicator from "./DefaultBirdCommunicator";
 import {BirdMessage, FromBirdMessageType, ToBirdMessageType} from "./BirdMessage";
 import {BirdCommunicator} from "./BirdCommunicator";
+import {escapeRegExp} from "./utils";
 
 export default class Bird {
     session: Session;
     communicator:BirdCommunicator
-    activeBreakpoints=[]
+    activeBreakpoints={}
     constructor(communicator: DefaultBirdCommunicator = new DefaultBirdCommunicator()) {
         communicator.initialize(this.onMessage)
         this.communicator=communicator
@@ -14,7 +15,7 @@ export default class Bird {
     async start(){
         await this.communicator.isReady()
         this.startSession()
-        this.setBoint('',{fileName:'',line:0}) // remove
+        this.setBoint({fileName:'todo-server.js',line:21,ref:'x'}) // remove
     }
 
 
@@ -23,9 +24,12 @@ export default class Bird {
         if(!message || !message.type){
             console.error("Received invalid message, check your bird communicator")
         }
-        switch (message.type){
-            case ToBirdMessageType.NEW_POINT:
-                this.setBoint(message.id,message.payload)
+        switch (message.type as ToBirdMessageType){
+            case ToBirdMessageType.NEW_BOINT:
+                this.setBoint(message.payload)
+                break;
+            case ToBirdMessageType.REMOVE_BOINT:
+                this.removeBoint(message.payload)
                 break;
 
         }
@@ -47,7 +51,13 @@ export default class Bird {
 
 
     private reachedBoint(event,scopeVariables){
-
+        this.communicator.onBirdMessage({
+            type:FromBirdMessageType.BOINT_REACHED,
+            payload:{
+                scopeVariables,
+                breakPointIds:event.params.hitBreakpoints
+            }
+        })
     }
 
     /*
@@ -96,30 +106,31 @@ export default class Bird {
 
         }
 
-    private setBoint(msgId:string,{line: number, fileName: string}){
+    private setBoint(payload:{ ref:string,line: number, fileName: string,}){
         this.session.post("Debugger.setBreakpointByUrl", {
-            lineNumber: 21, // the line number where you want to set the breakpoint
-            urlRegex: ".*todo-server.js$",
+            lineNumber: payload.line, // the line number where you want to set the breakpoint
+            urlRegex: `.*${escapeRegExp(payload.fileName)}$`,
         },(e,params)=>{
-            if(e){
-                // report error
-            } else{
-                this.activeBreakpoints.push(params.breakpointId)
+            if(!e){
+                if(this.activeBreakpoints[payload.ref]){
+                    this.removeBoint(payload.ref)
+                }
+                this.activeBreakpoints[payload.ref]=params.breakpointId
                 this.communicator.onBirdMessage({
-                    id:msgId,
                     type:FromBirdMessageType.REGISTERED_BOINT,
                     payload:{
+                        id:payload.ref,
                         breakpointId:params.breakpointId
                     }
 
                 })
-                // Send id back to client
             }
         });
     }
 
-    private removeBoint(breakpointId){
-        this.session.post('Debugger.removeBreakpoint',{breakpointId:breakpointId})
+    private removeBoint(ref){
+        this.session.post('Debugger.removeBreakpoint',{breakpointId:this.activeBreakpoints[ref]})
+        delete this.activeBreakpoints[ref]
     }
 
 

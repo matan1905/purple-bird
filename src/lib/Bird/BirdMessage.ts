@@ -1,13 +1,14 @@
 
 export enum ToBirdMessageType{
-    NEW_POINT
+    NEW_BOINT,
+    REMOVE_BOINT,
 }
 
 export enum FromBirdMessageType{
-    REGISTERED_BOINT
+    REGISTERED_BOINT,
+    BOINT_REACHED
 }
 export type BirdMessage = {
-    id:string;
     type:ToBirdMessageType | FromBirdMessageType;
     payload:any;
 }
