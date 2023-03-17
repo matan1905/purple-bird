@@ -1,7 +1,8 @@
 import {AppServer} from "./todo-server";
-import Bird from "./Bird";
+import Bird from "./Bird/Bird";
 
 
 
-new Bird()
-AppServer()
+new Bird().start().then(x=>{
+    AppServer()
+})

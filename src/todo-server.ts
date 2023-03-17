@@ -12,7 +12,7 @@ export function AppServer() {
     app.use(express.json());
 
     app.get("/todos", (req, res) => {
-        console.log('a')
+        const a ='a'
         res.send(todos);
     });
 
@@ -20,6 +20,8 @@ export function AppServer() {
         const task = req.body.task;
         const newTodo = { id: nextId++, task };
         todos.push(newTodo);
+
+
         res.send(newTodo);
     });
 
