@@ -15,6 +15,8 @@ There is a lot to be done and it's not perfect, but it was an insightful weekend
 * locally run web-ide to display variables at the scope of the boints
 
 # Running the examples
+This guide is made for unix based machines, if you are using windows make sure you use a unix cli emulator such as the git bash
+
 Start by cloning the repository, and installing dependencies:
 ```bash
 git clone https://github.com/matan1905/purple-bird.git && cd purple-bird && npm install
@@ -25,6 +27,7 @@ make sure you run it from the root of the Purple bird repository:
 ```bash
 npm run build # building the example project 
 cd web-ide 
+npm install # installing dependencies
 PROJECT_DIR=$(pwd)/../build npm run dev # running the web ide
 ```
 The Web IDE should now be available over at: http://localhost:3000
@@ -32,6 +35,7 @@ The Web IDE should now be available over at: http://localhost:3000
 The next step would be to run the example todo server. it is already loaded with purple-bird sdk.
 you can see it over at /src/examples/todo-server.ts
 ```bash
+cd .. 
 npm run example # running the example project
 ```
 
@@ -43,7 +47,9 @@ curl --request POST \
   --url http://localhost:3200/todos \
   --header 'Content-Type: application/json' \
   --data '{
-	"task": "Check out the web ide for debug data"
+	"task": {
+		"todo":"Check out the web ide for debug data"
+	}
 }'
 ```
 and return to the web ide to see it.
