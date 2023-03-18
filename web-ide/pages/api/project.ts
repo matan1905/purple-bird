@@ -41,5 +41,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<any>
 ) {
+  res.setHeader('Cache-Control', 'no-store')
   res.status(200).json(await loadProjectFromFileSystem())
 }

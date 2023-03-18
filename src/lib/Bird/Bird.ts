@@ -50,11 +50,12 @@ export default class Bird {
 
 
     private reachedBoint(event,scopeVariables){
+        const ref = Object.keys(this.activeBreakpoints).find(key=>event.params.hitBreakpoints==this.activeBreakpoints[key])
         this.communicator.onBirdMessage({
             type:FromBirdMessageType.BOINT_REACHED,
             payload:{
                 scopeVariables,
-                breakPointIds:event.params.hitBreakpoints
+                ref
             }
         })
     }
