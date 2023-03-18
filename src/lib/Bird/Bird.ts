@@ -94,7 +94,12 @@ export default class Bird {
                             }
                     })
                     Promise.all(valuePromises).then(arr=>scopeResolve(arr.filter(x=>x).reduce((prev,curr)=>{
-                        prev[curr.key] = JSON.parse(curr.value)
+                        try{
+                            prev[curr.key] = JSON.parse(curr.value)
+                        }
+                        catch (e) {
+                            prev[curr.key] = curr.value
+                        }
                         return prev;
                     },{})))
                 }))
