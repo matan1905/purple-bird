@@ -14,6 +14,10 @@ There is a lot to be done and it's not perfect, but it was an insightful weekend
 * Set non-breaking breakpoints (Boints) on any line of your code
 * locally run web-ide to display variables at the scope of the boints
 
+# Screenshots
+![Logo](./images/ss1.png)
+![Logo](./images/ss2.png)
+
 # Running the examples
 This guide is made for unix based machines, if you are using windows make sure you use a unix cli emulator such as the git bash
 
