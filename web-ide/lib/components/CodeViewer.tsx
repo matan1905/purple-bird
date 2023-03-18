@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useAtom} from "jotai";
 import {selectedFileAtom} from "@/lib/components/DirectoryTree";
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -9,6 +9,8 @@ function CodeViewer() {
     const [loading,setLoading] = useState(false)
     const [code,setCode] = useState(undefined)
     const [debuggedLines,setDebuggedLines] = useState({})
+    useRef({})
+
     useEffect(()=>{
         if(selectedFile){
             setLoading(true)
@@ -25,16 +27,10 @@ function CodeViewer() {
     const [webSocket, setWebSocket] = useState(null as WebSocket);
     useEffect(() => {
         const ws = new WebSocket('ws://localhost:3001');
-
         ws.onopen = () => {
             console.log('WebSocket connected');
             setWebSocket(ws);
         };
-
-        ws.onmessage = (event) => {
-            console.log(`Received message: ${event.data}`);
-        };
-
         ws.onclose = () => {
             console.log('WebSocket disconnected');
             setWebSocket(null);
@@ -46,6 +42,32 @@ function CodeViewer() {
             }
         };
     }, []);
+    useEffect(()=>{
+        if(!webSocket) return
+        webSocket.onmessage = (event) => {
+            try{
+                const msg = JSON.parse(event.data)
+                const payload = msg.payload
+                console.log(msg)
+                switch (msg.type){
+                    case 'addedBoint':
+                        if(debuggedLines[parseInt(payload?.ref?.split?.(':')?.[1])]){
+                            debuggedLines[parseInt(payload.ref.split(':')[1])].pending = false
+                            setDebuggedLines(JSON.parse(JSON.stringify(debuggedLines)))
+                        }
+                        break;
+                    case 'removedBoint':
+                        if(debuggedLines[parseInt(payload?.ref?.split?.(':')?.[1])]){
+                            delete debuggedLines[parseInt(payload.ref.split(':')[1])]
+                            setDebuggedLines(JSON.parse(JSON.stringify(debuggedLines)))
+                        }
+                        break;
+                    case 'bointReached':
+                        break;
+                }
+            } catch (e) {}
+        };
+    },[debuggedLines])
 
 
     if(loading) return 'loading your file...'
@@ -56,25 +78,35 @@ function CodeViewer() {
                                          wrapLines={true}
                                          lineProps={lineNumber => {
                                              return {
-                                                 style: {display: 'block',background:debuggedLines[lineNumber]?'red':undefined},
+                                                 style: {display: 'block',background:debuggedLines[lineNumber]?(
+                                                         debuggedLines[lineNumber].pending?'#ff8baa':'#f83c6e'
+                                                     ):undefined},
                                                  onClick() {
                                                      if( debuggedLines[lineNumber]){
-                                                         delete  debuggedLines[lineNumber]
+                                                         debuggedLines[lineNumber].pending=true
+                                                         webSocket.send(JSON.stringify({
+                                                             type:'removeBoint',
+                                                             payload: debuggedLines[lineNumber].ref
+                                                         }))
+                                                         setDebuggedLines(JSON.parse(JSON.stringify(debuggedLines)))
                                                      }
                                                      else {
                                                          debuggedLines[lineNumber] = {
-                                                             ref: `${selectedFile}:${lineNumber}`
+                                                             ref: `${selectedFile}:${lineNumber}`,
+                                                             pending:true
                                                          }
+                                                         setDebuggedLines(JSON.parse(JSON.stringify(debuggedLines)))
                                                          webSocket.send(JSON.stringify({
                                                              type:'addBoint',
                                                              payload: {
                                                                  line: lineNumber,
-                                                                 fileName: selectedFile,
+                                                                 fileName: selectedFile.replace('.ts','.js').split('/')[3],
                                                                  ref: debuggedLines[lineNumber].ref
                                                              }
                                                          }))
+                                                         console.log(selectedFile.replace('.ts','.js').split('/')[3])
                                                      }
-                                                     setDebuggedLines({...debuggedLines})
+
                                                  }
                                              }}}
                                          language="typescript"

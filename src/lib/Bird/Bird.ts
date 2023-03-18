@@ -106,7 +106,6 @@ export default class Bird {
         }
 
     private setBoint(payload:{ ref:string,line: number, fileName: string,}){
-        console.log('adding...')
         this.session.post("Debugger.setBreakpointByUrl", {
             lineNumber: payload.line, // the line number where you want to set the breakpoint
             urlRegex: `.*${escapeRegExp(payload.fileName)}$`,
@@ -119,7 +118,7 @@ export default class Bird {
                 this.communicator.onBirdMessage({
                     type:FromBirdMessageType.ADDED_BOINT,
                     payload:{
-                        id:payload.ref,
+                        ref:payload.ref,
                         breakpointId:params.breakpointId
                     }
 
@@ -130,6 +129,12 @@ export default class Bird {
 
     private removeBoint(ref){
         this.session.post('Debugger.removeBreakpoint',{breakpointId:this.activeBreakpoints[ref]})
+        this.communicator.onBirdMessage({
+            type:FromBirdMessageType.REMOVED_BOINT,
+            payload:{
+                ref:ref,
+            }
+        })
         delete this.activeBreakpoints[ref]
     }
 
