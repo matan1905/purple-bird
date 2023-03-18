@@ -5,7 +5,7 @@ import fs from "fs";
 async function getFileFromFileSystem(filePath){
     const directory = process.env['PROJECT_DIR']
     const combinedPath = path.join(directory, '..', filePath);
-    if (!combinedPath.startsWith(directory)) throw 'invalid path'
+    if (!combinedPath.startsWith(path.join(directory, '.'))) throw 'invalid path'
     return fs.readFileSync(combinedPath)
 }
 export default async function handler(
@@ -18,6 +18,7 @@ export default async function handler(
             content
         })
     }catch (e) {
+        console.log(e)
         res.status(404).json({})
     }
 }
