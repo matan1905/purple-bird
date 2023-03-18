@@ -4,5 +4,6 @@ import Bird from "../lib/Bird/Bird";
 
 
 new Bird().start().then(()=>{
-    AppServer()
+    console.log('Ready for some debuggin')
 })
+AppServer()

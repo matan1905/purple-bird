@@ -5,5 +5,5 @@ export interface BirdCommunicator {
 
     initialize(sendMessageFunction: (message: BirdMessage) => void): void;
 
-   isReady(): Promise<boolean>;
+   waitUntilReady(): Promise<void>;
 }

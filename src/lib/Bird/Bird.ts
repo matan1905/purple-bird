@@ -9,23 +9,22 @@ export default class Bird {
     communicator:BirdCommunicator
     activeBreakpoints={}
     constructor(communicator: DefaultBirdCommunicator = new DefaultBirdCommunicator()) {
-        communicator.initialize(this.onMessage)
+        communicator.initialize(this.onMessage.bind(this))
         this.communicator=communicator
     }
     async start(){
-        await this.communicator.isReady()
+        await this.communicator.waitUntilReady()
         this.startSession()
-        this.setBoint({fileName:'todo-server.js',line:21,ref:'x'}) // remove
     }
 
 
 
     private onMessage(message:BirdMessage){
-        if(!message || !message.type){
-            console.error("Received invalid message, check your bird communicator")
+        if(!message || message.type===undefined){
+            console.error("Received invalid message, check your bird communicator", message)
         }
         switch (message.type as ToBirdMessageType){
-            case ToBirdMessageType.NEW_BOINT:
+            case ToBirdMessageType.ADD_BOINT:
                 this.setBoint(message.payload)
                 break;
             case ToBirdMessageType.REMOVE_BOINT:
@@ -107,6 +106,7 @@ export default class Bird {
         }
 
     private setBoint(payload:{ ref:string,line: number, fileName: string,}){
+        console.log('adding...')
         this.session.post("Debugger.setBreakpointByUrl", {
             lineNumber: payload.line, // the line number where you want to set the breakpoint
             urlRegex: `.*${escapeRegExp(payload.fileName)}$`,
@@ -117,7 +117,7 @@ export default class Bird {
                 }
                 this.activeBreakpoints[payload.ref]=params.breakpointId
                 this.communicator.onBirdMessage({
-                    type:FromBirdMessageType.REGISTERED_BOINT,
+                    type:FromBirdMessageType.ADDED_BOINT,
                     payload:{
                         id:payload.ref,
                         breakpointId:params.breakpointId
