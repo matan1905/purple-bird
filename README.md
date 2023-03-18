@@ -20,19 +20,20 @@ Start by cloning the repository, and installing dependencies:
 git clone https://github.com/matan1905/purple-bird.git && cd purple-bird && npm install
 ```
 
-The next step would be to run the example todo server. it is already loaded with purple-bird sdk.
-you can see it over at /src/examples/todo-server.ts
-```bash
-npm run example
-```
 Then you will need to run the debugging interface.
 make sure you run it from the root of the Purple bird repository:
 ```bash
-cd web-ide
-PROJECT_DIR=$(pwd)/../build npm run dev
+npm run build # building the example project 
+cd web-ide 
+PROJECT_DIR=$(pwd)/../build npm run dev # running the web ide
 ```
 The Web IDE should now be available over at: http://localhost:3000
 
+The next step would be to run the example todo server. it is already loaded with purple-bird sdk.
+you can see it over at /src/examples/todo-server.ts
+```bash
+npm run example # running the example project
+```
 
 This will show you the file system of the resulting build process, where you can put any breakpoint you would like, and it will display you the debugging  information.
 
